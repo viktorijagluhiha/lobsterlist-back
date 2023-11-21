@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Item {
+  id            Int          @id @default(autoincrement())
+
+  title         String       @db.VarChar(50)
+  description   String?
+  priceFrom     Decimal      @db.Decimal(10, 2)
+  priceTo       Decimal?     @db.Decimal(10, 2)                                                                                    
+  priority      Int          @default(autoincrement())
+
+  ticked        Boolean      @default(false)
+  tickedAt      DateTime?
+  tickedBy      String?      @db.VarChar(10)
+
+  links         ItemLink[]   @relation(name: "item-links")
+
+  @@index([priority])
+  @@index([title])
+  @@index([priceFrom])
+}
+
+model ItemLink {
+  id            Int          @id @default(autoincrement())
+
+  href          String
+  description   String?
+
+  itemId        Int
+
+  item          Item         @relation(name: "item-links", fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+}

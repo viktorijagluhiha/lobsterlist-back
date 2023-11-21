@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  lobsterlist-postgres:
+    image: postgres:latest
+    container_name: lobsterlist-postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - '/data/lobsterlist-postgres:/data/postgres'
+    env_file:
+      - db.env
+    networks:
+      - lobsterlist-internal
+
+  lobsterlist-back:
+    container_name: lobsterlist-back
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - '3021:3000'
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - lobsterlist-internal
+
+networks:
+  lobsterlist-internal:
+    external: false
