@@ -5,9 +5,9 @@ services:
     image: postgres:latest
     container_name: lobsterlist-postgres
     ports:
-      - '5432:5432'
+      - '5020:5432'
     volumes:
-      - '/data/lobsterlist-postgres:/data/postgres'
+      - '~/projects/lobsterlist/lobsterlist-postgres/:/data/postgres'
     env_file:
       - db.env
     networks:

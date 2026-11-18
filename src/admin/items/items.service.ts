@@ -5,21 +5,21 @@ import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class ItemsService {
-  constructor(
-    private prisma: PrismaService,
-  ) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(createItemDto: CreateItemDto) {
-    const {links, ...itemData} = {links: [], ...createItemDto};
+    const { links, ...itemData } = createItemDto;
 
     return await this.prisma.item.create({
       data: {
         ...itemData,
-        links: {
-          createMany: {
-            data: links,
-          },
-        },
+        links: links?.length
+          ? {
+              createMany: {
+                data: links,
+              },
+            }
+          : undefined,
       },
       include: {
         links: true,
@@ -28,7 +28,11 @@ export class ItemsService {
   }
 
   async createMany(createItemDtos: CreateItemDtos) {
-    return await Promise.all(createItemDtos.data.map(async (createItemDto) => (await this.create(createItemDto))));
+    return await Promise.all(
+      createItemDtos.data.map(
+        async (createItemDto) => await this.create(createItemDto),
+      ),
+    );
   }
 
   async findAll() {
