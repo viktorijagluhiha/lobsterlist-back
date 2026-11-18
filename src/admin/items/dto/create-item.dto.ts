@@ -1,4 +1,11 @@
-import { IsArray, IsDecimal, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsDecimal,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
 import { Type } from "class-transformer";
 
 class CreateItemLinkDto {
@@ -21,14 +28,14 @@ export class CreateItemDto {
   description?: string;
 
   @IsDecimal()
-  priceFrom: number;
+  priceFrom: string;
 
   @IsDecimal()
   @IsOptional()
-  priceTo?: number;
+  priceTo?: string;
 
   @IsArray()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => CreateItemLinkDto)
   @IsOptional()
   links?: CreateItemLinkDto[];
@@ -36,7 +43,7 @@ export class CreateItemDto {
 
 export class CreateItemDtos {
   @IsArray()
-  @ValidateNested({each: true})
+  @ValidateNested({ each: true })
   @Type(() => CreateItemDto)
   data: CreateItemDto[];
 }

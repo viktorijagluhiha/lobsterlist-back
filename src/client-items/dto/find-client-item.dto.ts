@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "../../generated/prisma/client";
 import { IsIn, IsOptional, IsString } from "class-validator";
 
 const sortOrderValues = ["asc", "desc"] as const;

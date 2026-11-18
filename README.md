@@ -22,82 +22,97 @@ Here's an example of how could such table look like for user:
 
 ## Installation
 
-```bash
-$ npm install
+Use **Node.js 24.15 or newer on the 24.x LTS line** and npm. The `.nvmrc`
+selects Node 24; the Docker image uses the same LTS line.
 
-# if you don't have nest cli
-$ npm install -g @nestjs/cli
+Alternatively, use the Nix flake from this directory instead of nvm:
+
+```bash
+nix develop
+npm ci
+npm run start:dev
 ```
+
+If env-s do not exist yet, copy `.env.txt` to `.env` and `db.env.txt` to `db.env`.
+Set matching PostgreSQL credentials in both files. For a backend running on the
+host, `.env` should contain:
+
+```dotenv
+DATABASE_URL="postgresql://DB_USER:DB_PASSWORD@localhost:5020/DB_NAME?schema=public"
+```
+
+Prisma 7 loads the migration URL through `prisma.config.ts`. The backend loads
+`.env` explicitly and connects using `@prisma/adapter-pg`.
 
 ## Running the app
 
 ### For development
 
 ```bash
-# launch database container
-$ docker compose up -d lobsterlist-postgres
+# PostgreSQL is exposed to the host on port 5020
+npm run prisma:generate # optional: npm ci already generates the client
+docker compose up -d lobsterlist-postgres
+npm run prisma:migrate
 
-# deploy migrations
-$ npx prisma migrate deploy
+# backend on http://localhost:3000
+npm start
 
-# generate prisma resources
-$ npx prisma generate
-
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
+# alternatively, watch mode
+npm run start:dev
 ```
 
-### For production
+To run the compiled application locally:
 
 ```bash
-# launch database container
-$ docker compose up -d lobsterlist-postgres
-
-# deploy migrations
-$ npx prisma migrate deploy
-
-# stop database container to make some further changes
-$ docker stop lobsterlist-postgres
+npm run build
+npm run start:prod
 ```
-In the ```.env``` file change ```DATABASE_URL``` to URL with container name (```lobsterlist-postgres```).
 
-In the ```docker-compose.yml``` you can remove ```ports``` section it becomes unnecessary.
+### For production with Docker Compose
+
+Start PostgreSQL and apply migrations from the host using the `localhost:5020`
+URL before starting the backend:
 
 ```bash
-# launch database container again
-$ docker compose up -d lobsterlist-postgres
-
-# build backend container
-$ docker compose build lobsterlist-back
-
-# launch backend container
-$ docker compose up -d lobsterlist-back
+docker compose up -d lobsterlist-postgres
+npm run prisma:migrate
 ```
 
-The backend container is reachable on exposed port - ```3021```. Feel free to change port in the ```docker-compose.yml``` file.
+For the backend container, set `DATABASE_URL` in `.env` to use
+`lobsterlist-postgres:5432` instead of `localhost:5020`. Containers use the
+internal PostgreSQL port, while local npm commands use the external port 5020.
+
+
+```bash
+docker compose up -d --build lobsterlist-back
+```
+
+The backend container is exposed on port **3021**. The image installs from the
+npm lockfile, generates Prisma before compiling, and includes only production
+dependencies at runtime. Environment files are excluded from the image.
 
 ## Test
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm test -- --runInBand
+npm run test:e2e -- --runInBand
+npm run test:cov
+npm run lint
 ```
+
+Unit tests do not require PostgreSQL. E2E tests use `DATABASE_URL` from the
+environment or `.env`, create and migrate a unique temporary PostgreSQL schema,
+and remove it afterward. The database user must be able to create schemas.
+Existing item data is not modified. The tests cover creation with links, bulk
+creation, priority and price sorting, reservation/release, cascade deletion,
+validation, and CORS using the same application setup as production.
 
 ## Endpoints
 
 | HTTP method | URL | Path variables | Body | Description |
 |:---:| --- | --- | --- | --- |
-| POST | /admin/items | - | JSON<br> <pre>{<br>  title: string;<br>  description?: string;<br>  priceFrom: number;<br>  priceTo?: number;<br>  links?: [{<br>    href: string;<br>    description?: string;<br>  }];<br>}</pre> | Create new Item. |
-| POST | /admin/items/multiple | - | JSON<br> <pre>{<br>  data: [{<br>    title: string;<br>    description?: string;<br>    priceFrom: number;<br>    priceTo?: number;<br>    links?: [{<br>      href: string;<br>      description?: string;<br>    }];<br>  }]<br>}</pre> | Create multiple new Items from data array. |
+| POST | /admin/items | - | JSON<br> <pre>{<br>  title: string;<br>  description?: string;<br>  priceFrom: string;<br>  priceTo?: string;<br>  links?: [{<br>    href: string;<br>    description?: string;<br>  }];<br>}</pre> | Create new Item. |
+| POST | /admin/items/multiple | - | JSON<br> <pre>{<br>  data: [{<br>    title: string;<br>    description?: string;<br>    priceFrom: string;<br>    priceTo?: string;<br>    links?: [{<br>      href: string;<br>      description?: string;<br>    }];<br>  }]<br>}</pre> | Create multiple new Items from data array. |
 | GET | /admin/items | - | - | Get all Items. Ordered by ```priority``` field. |
 | PATCH | /admin/items/:id | id: number | JSON<br> <pre>{<br>  priority: number;<br>}</pre> | Update Item's ```priority``` value. |
 | DELETE | /admin/items/:id | id: number | - | Delete Item by ```id```.<br> Unlike others URL, response is in format:<br> <pre>{<br>  id: number;<br>}</pre> |

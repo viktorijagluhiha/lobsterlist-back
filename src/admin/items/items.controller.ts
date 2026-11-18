@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpException,
+  HttpStatus,
+} from "@nestjs/common";
 import { ItemsService } from "./items.service";
 import { CreateItemDto, CreateItemDtos } from "./dto/create-item.dto";
 import { UpdateItemDto } from "./dto/update-item.dto";
@@ -11,11 +21,11 @@ export class ItemsController {
   async create(@Body() createItemDto: CreateItemDto) {
     try {
       return await this.itemsService.create(createItemDto);
-    } catch(error) {
+    } catch {
       throw new HttpException(
-        'Internal error',
+        "Internal error",
         HttpStatus.INTERNAL_SERVER_ERROR,
-      ); 
+      );
     }
   }
 
@@ -23,11 +33,11 @@ export class ItemsController {
   async createMany(@Body() createItemDtos: CreateItemDtos) {
     try {
       return await this.itemsService.createMany(createItemDtos);
-    } catch(error) {
+    } catch {
       throw new HttpException(
-        'Internal error',
+        "Internal error",
         HttpStatus.INTERNAL_SERVER_ERROR,
-      ); 
+      );
     }
   }
 
@@ -35,11 +45,11 @@ export class ItemsController {
   async findAll() {
     try {
       return await this.itemsService.findAll();
-    } catch(error) {
+    } catch {
       throw new HttpException(
-        'Internal error',
+        "Internal error",
         HttpStatus.INTERNAL_SERVER_ERROR,
-      ); 
+      );
     }
   }
 
@@ -47,11 +57,11 @@ export class ItemsController {
   async update(@Param("id") id: string, @Body() updateItemDto: UpdateItemDto) {
     try {
       return await this.itemsService.update(+id, updateItemDto);
-    } catch(error) {
+    } catch {
       throw new HttpException(
-        'Internal error',
+        "Internal error",
         HttpStatus.INTERNAL_SERVER_ERROR,
-      ); 
+      );
     }
   }
 
@@ -59,11 +69,11 @@ export class ItemsController {
   async remove(@Param("id") id: string) {
     try {
       return await this.itemsService.remove(+id);
-    } catch(error) {
+    } catch {
       throw new HttpException(
-        'Internal error',
+        "Internal error",
         HttpStatus.INTERNAL_SERVER_ERROR,
-      ); 
+      );
     }
   }
 }
